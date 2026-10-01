@@ -1,0 +1,8 @@
+venv/
+data/
+.ipynb_checkpoints/
+__pycache__/
+*.pyc
+browser_profile/
+*.html
+struktur_folder.txt

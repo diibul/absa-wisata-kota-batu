@@ -177,18 +177,117 @@ browser_profile/
 
 ---
 
-## 2. Menjalankan Scraper
+## 2. Menentukan Target Scraping
 
-Scraper dijalankan berdasarkan nama destinasi.
+Target jumlah review harus disesuaikan dengan destinasi yang sedang dikerjakan.
+
+Buka file:
+
+```text
+scripts/scraper.py
+```
+
+Cari bagian berikut:
+
+```python
+elif command in DESTINATIONS:
+    scrape(
+        command,
+        DESTINATIONS[command],
+        max_reviews=1000
+    )
+```
+
+Nilai `max_reviews` digunakan untuk menentukan target jumlah review yang akan dicoba dikumpulkan oleh scraper.
+
+Ubah nilai `max_reviews` sesuai dengan target destinasi.
+
+### Target Scraping Project
+
+| Destinasi | Target Review |
+|---|---:|
+| Jatim Park 1 | 2.000 |
+| Jatim Park 2 | 3.000 |
+| Jatim Park 3 | 2.500 |
+| Museum Angkut | 3.000 |
+| BNS | 2.500 |
+| Museum Tubuh | 2.000 |
+
+### Contoh
+
+Untuk Jatim Park 1:
+
+```python
+max_reviews=2000
+```
+
+Kemudian jalankan:
 
 ```powershell
 python scripts\scraper.py jatimpark1
+```
+
+Setelah selesai dan ingin mengerjakan Jatim Park 2, ubah target menjadi:
+
+```python
+max_reviews=3000
+```
+
+Kemudian jalankan:
+
+```powershell
 python scripts\scraper.py jatimpark2
+```
+
+Untuk Jatim Park 3:
+
+```python
+max_reviews=2500
+```
+
+```powershell
 python scripts\scraper.py jatimpark3
+```
+
+Untuk Museum Angkut:
+
+```python
+max_reviews=3000
+```
+
+```powershell
 python scripts\scraper.py museum_angkut
+```
+
+Untuk BNS:
+
+```python
+max_reviews=2500
+```
+
+```powershell
 python scripts\scraper.py bns
+```
+
+Untuk Museum Tubuh:
+
+```python
+max_reviews=2000
+```
+
+```powershell
 python scripts\scraper.py museum_tubuh
 ```
+
+> **Penting:** Nilai `max_reviews` harus diperiksa dan diubah sebelum menjalankan setiap destinasi. Jangan menggunakan nilai target destinasi sebelumnya untuk destinasi berikutnya.
+
+Target tersebut merupakan jumlah review yang **ditargetkan untuk dikumpulkan oleh scraper**. Jumlah aktual dapat lebih sedikit apabila scraper tidak menemukan review baru, panel review tidak berkembang lagi, atau proses mencapai batas scroll yang tersedia.
+
+---
+
+## 3. Menjalankan Scraper
+
+Setelah `max_reviews` disesuaikan dengan destinasi yang sedang dikerjakan, jalankan command sesuai nama destinasi.
 
 Nama destinasi yang tersedia:
 
@@ -201,9 +300,17 @@ bns
 museum_tubuh
 ```
 
+Contoh:
+
+```powershell
+python scripts\scraper.py jatimpark1
+```
+
+Biarkan proses berjalan sampai scraper menampilkan hasil akhir pada terminal.
+
 ---
 
-## 3. Lokasi Output
+## 4. Lokasi Output
 
 Hasil scraping akan disimpan pada:
 
@@ -222,29 +329,20 @@ data/raw/bns.csv
 data/raw/museum_tubuh.csv
 ```
 
+Setiap file berisi hasil scraping untuk satu destinasi.
+
 ---
 
-## 4. Scraping Beberapa Sesi
+## 5. Catatan Pengulangan Scraping
 
-Scraper saat ini belum memiliki mekanisme resume otomatis. Mode per-destinasi memiliki batas maksimal sekitar **1.000 review per sesi**.
+Scraper menggunakan `review_id` untuk mencegah review yang sama dihitung lebih dari satu kali dalam satu proses scraping.
 
-Karena target project lebih besar, pengumpulan data dilakukan melalui beberapa sesi. Sebelum menjalankan sesi berikutnya, hasil sesi sebelumnya harus diamankan agar tidak tertimpa.
+Namun, scraper **belum memiliki mekanisme resume otomatis dari file hasil scraping sebelumnya**.
 
-Contoh:
+Oleh karena itu, jangan menjalankan kembali destinasi yang sama sebelum hasil sebelumnya diamankan dan diperiksa.
 
-```text
-data/raw/jatimpark1.csv
-```
+Strategi pengambilan data untuk target yang belum tercapai akan ditentukan berdasarkan hasil pengujian scraper dan validasi overlap antar-sesi.
 
-ubah menjadi:
-
-```text
-data/raw/jatimpark1_sesi1.csv
-```
-
-Kemudian jalankan kembali scraper untuk sesi berikutnya.
-
-Data dari seluruh sesi akan digabungkan pada tahap merge dan dilakukan deduplikasi berdasarkan `review_id`.
 
 ---
 

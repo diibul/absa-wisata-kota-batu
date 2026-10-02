@@ -872,7 +872,7 @@ def scrape(name, url, max_reviews=30):
 
         no_new_data = 0
         scroll_count = 0
-        max_scrolls = 100
+        max_scrolls = 300
 
         while len(reviews) < max_reviews:
 
@@ -1038,7 +1038,7 @@ if __name__ == "__main__":
             scrape(
                 command,
                 DESTINATIONS[command],
-                max_reviews=1000
+                max_reviews=2000
             )
 
         else:

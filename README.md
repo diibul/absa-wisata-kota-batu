@@ -74,7 +74,11 @@ absa-wisata-kota-batu/
 ├── scripts/
 │   ├── scraper.py
 │   ├── merge.py
-│   └── preprocess.py
+│   ├── preprocess.py
+│   └── baseline.py
+│
+├── hasil/
+│   └── baseline/
 │
 ├── data/
 │   ├── raw/
@@ -84,7 +88,8 @@ absa-wisata-kota-batu/
 │       ├── 01_raw/
 │       ├── 02_annotation/
 │       ├── 03_audit/
-│       └── 04_gold_standard/
+│       ├── 04_gold_standard/
+│       └── 05_catatan_revisi/
 │
 ├── notebooks/
 │
@@ -420,12 +425,25 @@ Analysis
 
 Script pengolahan data yang tersedia:
 
-```text
-scripts/merge.py
-scripts/preprocess.py
+| Script | Fungsi | Output |
+|---|---|---|
+| `scripts/merge.py` | Menggabungkan semua CSV di `data/raw/`, memeriksa skema kolom, dan menghapus duplikat `review_id` | `data/merged/dataset_gabungan.csv` |
+| `scripts/preprocess.py` | Merapikan teks ulasan, mengubah tanggal relatif menjadi perkiraan usia ulasan, dan menandai ulasan yang diduga terpotong | `data/processed/dataset_bersih.csv` |
+| `scripts/baseline.py` | Baseline klasifikasi aspek dan sentimen pada gold standard (BoW, TF-IDF, dan n-gram dengan Decision Tree) | `hasil/baseline/` |
+
+Jalankan dari folder utama project, secara berurutan:
+
+```powershell
+python scripts\merge.py
+python scripts\preprocess.py
+python scripts\baseline.py
 ```
 
-Penggunaan kedua script akan mengikuti konfigurasi pipeline yang digunakan pada tahap pengolahan data.
+Catatan:
+
+* `preprocess.py` membaca gold standard di `data/ABSA/04_gold_standard/absa_gold_standard_200_review_v2.csv` untuk memperbaiki ulasan yang terpotong. Jika file tidak ada, tahap perbaikan dilewati.
+* `baseline.py` memerlukan `scikit-learn` dan `matplotlib`, yang sudah tercantum di `requirements.txt`.
+* Output `baseline.py` berisi tabel ringkasan, laporan klasifikasi, dan confusion matrix. Folder `hasil/` termasuk yang disimpan di repository.
 
 ---
 
@@ -455,3 +473,5 @@ Repository ini berisi kode dan konfigurasi yang digunakan dalam pengembangan pro
 Data hasil scraping tidak disimpan di repository GitHub dan dikelola secara terpisah pada environment lokal masing-masing anggota.
 
 Setiap anggota bertanggung jawab menjaga session Google dan data lokalnya masing-masing.
+
+Dataset dan gold standard memuat teks ulasan pengguna Google Maps. Sebelum dipublikasikan, periksa dan samarkan informasi pribadi yang mungkin ada di dalamnya, seperti nomor telepon atau nama pengguna.

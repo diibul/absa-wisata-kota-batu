@@ -229,6 +229,58 @@ def force_indonesian(page):
 
 
 # ============================================================
+# DISMISS POPUP LOGIN
+# ============================================================
+
+def dismiss_login_popup(page):
+    """
+    Tutup popup login Google Maps jika muncul.
+    Strategi utama: tekan Escape (tidak memicu navigasi).
+    Fallback: klik area di luar dialog.
+    Hindari klik tombol 'Tutup' karena bisa memicu navigasi ke map view.
+    """
+
+    # Cek apakah ada dialog/popup login.
+    dialog_selectors = [
+        "[role='dialog']",
+        "div[jsaction*='dismiss']",
+    ]
+
+    popup_found = False
+    for sel in dialog_selectors:
+        try:
+            el = page.locator(sel).first
+            if el.count() > 0 and el.is_visible(timeout=1000):
+                popup_found = True
+                break
+        except Exception:
+            pass
+
+    if not popup_found:
+        return False
+
+    # Strategi 1: Escape key — aman, tidak memicu navigasi.
+    try:
+        page.keyboard.press("Escape")
+        page.wait_for_timeout(600)
+        print("[POPUP] Popup login ditutup (Escape).")
+        return True
+    except Exception:
+        pass
+
+    # Strategi 2: Klik di luar area dialog (body pojok kiri atas).
+    try:
+        page.mouse.click(10, 10)
+        page.wait_for_timeout(600)
+        print("[POPUP] Popup login ditutup (klik luar).")
+        return True
+    except Exception:
+        pass
+
+    return False
+
+
+# ============================================================
 # LOGIN
 # ============================================================
 
@@ -311,6 +363,28 @@ def open_maps(page, url, name):
     force_indonesian(page)
 
     page.wait_for_timeout(2500)
+
+    # Tutup popup login jika muncul setelah halaman dimuat.
+    dismiss_login_popup(page)
+
+    # Tunggu agar redirect async (jika ada) selesai sebelum cek URL.
+    page.wait_for_timeout(2000)
+
+    # Verifikasi masih di place page setelah dismiss popup.
+    if "/maps/place/" not in page.url:
+        print(f"[{name}] Halaman bukan place page ({page.url[:60]}...). Navigasi ulang...")
+        page.goto(
+            localized_url,
+            wait_until="domcontentloaded",
+            timeout=30000,
+        )
+        page.wait_for_timeout(3000)
+        # Gunakan Escape untuk tutup popup kali ini.
+        try:
+            page.keyboard.press("Escape")
+            page.wait_for_timeout(600)
+        except Exception:
+            pass
 
     print(f"[{name}] URL akhir:")
     print(page.url)
@@ -788,20 +862,149 @@ def collect_visible_reviews(page, name, reviews):
 
 
 # ============================================================
+# SET URUTAN ULASAN
+# ============================================================
+
+SORT_OPTIONS = {
+    "relevan":  ["Paling relevan", "Most relevant"],
+    "terbaru":  ["Terbaru", "Newest"],
+    "tertinggi": ["Rating tertinggi", "Highest rating"],
+    "terendah": ["Rating terendah", "Lowest rating"],
+}
+
+
+def set_sort_order(page, sort_order, name):
+    """
+    Pilih urutan ulasan Google Maps.
+    sort_order: 'relevan' | 'terbaru' | 'tertinggi' | 'terendah'
+    """
+
+    if sort_order not in SORT_OPTIONS or sort_order == "relevan":
+        print(f"[{name}] Urutan: default (paling relevan).")
+        return True
+
+    print(f"[{name}] Mengatur urutan ulasan: {sort_order}...")
+
+    # Cari tombol sort.
+    sort_button_selectors = [
+        "button[aria-label*='Urutkan']",
+        "button[aria-label*='Sort']",
+        "button[jsaction*='sort']",
+        "button.g88MCb",
+    ]
+
+    sort_clicked = False
+    for selector in sort_button_selectors:
+        try:
+            btn = page.locator(selector).first
+            if btn.count() > 0 and btn.is_visible(timeout=3000):
+                btn.click(timeout=3000)
+                page.wait_for_timeout(1000)
+                print(f"[{name}] Tombol sort dibuka: {selector}")
+                sort_clicked = True
+                break
+        except Exception:
+            continue
+
+    if not sort_clicked:
+        print(f"[{name}] Tombol sort tidak ditemukan. Lanjut dengan urutan default.")
+        return False
+
+    # Pilih opsi yang diinginkan.
+    for label in SORT_OPTIONS[sort_order]:
+        try:
+            option = page.get_by_text(label, exact=True).first
+            if option.count() > 0 and option.is_visible(timeout=2000):
+                option.click(timeout=2000)
+                page.wait_for_timeout(2000)
+                print(f"[{name}] Urutan dipilih: {label}")
+                return True
+        except Exception:
+            continue
+
+    print(f"[{name}] Opsi urutan '{sort_order}' tidak ditemukan.")
+    return False
+
+
+# ============================================================
+# FILTER BINTANG
+# ============================================================
+
+def set_star_filter(page, star, name):
+    """
+    Filter ulasan berdasarkan bintang (1-5).
+    Setiap filter menampilkan subset ulasan berbeda.
+    star: 1 | 2 | 3 | 4 | 5, atau None untuk tidak filter.
+    """
+
+    if not star:
+        return True
+
+    print(f"[{name}] Mengatur filter bintang: {star}★...")
+
+    # Tombol filter bintang Google Maps.
+    selectors = [
+        f"button[aria-label*='{star} bintang']",
+        f"button[aria-label*='{star} star']",
+        f"button[aria-label*='{star}']",
+    ]
+
+    for selector in selectors:
+        try:
+            btn = page.locator(selector).first
+            if btn.count() > 0 and btn.is_visible(timeout=3000):
+                btn.click(timeout=3000)
+                page.wait_for_timeout(2000)
+                print(f"[{name}] Filter {star}★ aktif: {selector}")
+                return True
+        except Exception:
+            continue
+
+    # Fallback: cari semua button yang mengandung teks angka bintang.
+    try:
+        candidates = page.locator("button").all()
+        for btn in candidates:
+            try:
+                label = btn.get_attribute("aria-label") or ""
+                if str(star) in label and ("bintang" in label.lower() or "star" in label.lower()):
+                    btn.click(timeout=2000)
+                    page.wait_for_timeout(2000)
+                    print(f"[{name}] Filter {star}★ aktif via fallback: {label}")
+                    return True
+            except Exception:
+                continue
+    except Exception:
+        pass
+
+    print(f"[{name}] Filter {star}★ tidak ditemukan. Lanjut tanpa filter.")
+    return False
+
+
+# ============================================================
 # SCRAPE
 # ============================================================
 
-def scrape(name, url, max_reviews=30):
+def scrape(name, url, max_reviews=30, sort_order="relevan", star_filter=None):
 
-    output_file = os.path.join(
-        RAW_DIR,
-        f"{name}.csv"
-    )
+    # Nama file output menyertakan sort_order/star_filter jika bukan default.
+    suffix = ""
+    if sort_order and sort_order != "relevan":
+        suffix += f"_{sort_order}"
+    if star_filter:
+        suffix += f"_bintang{star_filter}"
+
+    if suffix:
+        output_file = os.path.join(RAW_DIR, f"{name}{suffix}.csv")
+    else:
+        output_file = os.path.join(RAW_DIR, f"{name}.csv")
+
 
     print()
     print("=" * 70)
     print(f"[{name}] MEMULAI SCRAPING")
     print(f"[{name}] Target: {max_reviews} review")
+    print(f"[{name}] Urutan: {sort_order} | Filter bintang: {star_filter or 'semua'}")
+    print(f"[{name}] Output: {output_file}")
     print("=" * 70)
 
     reviews = {}
@@ -850,6 +1053,12 @@ def scrape(name, url, max_reviews=30):
             return
 
         # ----------------------------------------------------
+        # Set Urutan Ulasan
+        # ----------------------------------------------------
+
+        set_sort_order(page, sort_order, name)
+
+        # ----------------------------------------------------
         # Tunggu review pertama
         # ----------------------------------------------------
 
@@ -872,13 +1081,14 @@ def scrape(name, url, max_reviews=30):
 
         no_new_data = 0
         scroll_count = 0
-        max_scrolls = 300
+        max_scrolls = 600
 
         while len(reviews) < max_reviews:
 
             # -----------------------------------------------
             # Ambil review yang sedang ada di DOM
             # -----------------------------------------------
+
 
             added, _ = collect_visible_reviews(
                 page,
@@ -935,7 +1145,7 @@ def scrape(name, url, max_reviews=30):
                     break
 
                 # Beri kesempatan satu putaran berikutnya.
-                page.wait_for_timeout(1200)
+                page.wait_for_timeout(800)
                 continue
 
             # -----------------------------------------------
@@ -1030,6 +1240,19 @@ if __name__ == "__main__":
             .lower()
         )
 
+        # Argumen sort order opsional (argv[2]).
+        # Contoh: python scripts\scraper.py bns terbaru
+        sort_arg = (
+            sys.argv[2].strip().lower()
+            if len(sys.argv) > 2
+            else "relevan"
+        )
+
+        if sort_arg not in SORT_OPTIONS:
+            print(f"Urutan tidak dikenali: '{sort_arg}'")
+            print(f"Pilihan: {', '.join(SORT_OPTIONS.keys())}")
+            sys.exit(1)
+
         if command == "login":
 
             login_session()
@@ -1038,7 +1261,8 @@ if __name__ == "__main__":
             scrape(
                 command,
                 DESTINATIONS[command],
-                max_reviews=2000
+                max_reviews=3000,
+                sort_order=sort_arg,
             )
 
         else:

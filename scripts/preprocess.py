@@ -18,6 +18,8 @@ def bersihkan_teks(teks):
     """Pembersihan ringan: baris baru dan tab menjadi spasi, spasi ganda dirapikan.
     Huruf kapital, emoji, dan tanda baca dipertahankan agar teks tetap sesuai
     ulasan asli saat anotasi manual."""
+    if pd.isna(teks):
+        return ""
     teks = re.sub(r"[\r\n\t]+", " ", str(teks))
     teks = re.sub(r" {2,}", " ", teks)
     return teks.strip()
@@ -54,37 +56,40 @@ def perbaiki_terpotong(df):
     return sumber, df
 
 
+SATUAN_BULAN = {"tahun": 12.0, "bulan": 1.0, "minggu": 1 / 4.0, "hari": 1 / 30.0,
+                "jam": 1 / 720.0, "menit": 1 / 43200.0, "detik": 1 / 2592000.0}
+TANGGAL_RE = re.compile(r"^(?:se|(\d+)\s+)(tahun|bulan|minggu|hari|jam|menit|detik)\s+lalu$")
+
+
 def parse_tanggal(teks):
     """Ubah tanggal relatif Google Maps menjadi perkiraan usia ulasan (bulan)
     dan penanda ulasan diedit. Hanya perkiraan kasar, karena tanggal scraping
-    tidak tercatat di data."""
+    tidak tercatat di data. Bentuk yang dikenali: "setahun lalu", "seminggu lalu",
+    "3 bulan lalu", "22 jam lalu", dan sejenisnya, dengan awalan "Diedit" opsional."""
     t = str(teks).strip().lower()
     diedit = t.startswith("diedit")
     t = t.replace("diedit", "").strip()
-    if t == "setahun lalu":
-        bulan = 12.0
-    elif t == "sebulan lalu":
-        bulan = 1.0
-    else:
-        m = re.match(r"(\d+)\s+(tahun|bulan|minggu|hari)\s+lalu", t)
-        if not m:
-            return pd.Series([None, diedit])
-        n, satuan = int(m.group(1)), m.group(2)
-        bulan = {"tahun": n * 12.0, "bulan": float(n),
-                 "minggu": n / 4.0, "hari": n / 30.0}[satuan]
-    return pd.Series([bulan, diedit])
+    m = TANGGAL_RE.match(t)
+    if not m:
+        return pd.Series([None, diedit])
+    n = int(m.group(1)) if m.group(1) else 1
+    return pd.Series([n * SATUAN_BULAN[m.group(2)], diedit])
 
 
 def preprocess():
     df = pd.read_csv(IN_PATH, encoding="utf-8-sig")
     n_awal = len(df)
+    # Ulasan yang hanya berisi bintang (tanpa teks) dibaca sebagai kosong.
+    df["ulasan"] = df["ulasan"].fillna("")
 
+    n_awal_per_destinasi = df.groupby("destinasi").size()
     sumber, df = perbaiki_terpotong(df)
     df["ulasan_bersih"] = sumber.apply(bersihkan_teks)
 
     # Buang baris yang kosong setelah dibersihkan
     df = df[df["ulasan_bersih"] != ""].copy()
     n_kosong = n_awal - len(df)
+    kosong_per_destinasi = (n_awal_per_destinasi - df.groupby("destinasi").size()).fillna(0).astype(int)
 
     df[["usia_bulan", "diedit"]] = df["tanggal"].apply(parse_tanggal)
 
@@ -104,6 +109,8 @@ def preprocess():
 
     print(f"Baris awal: {n_awal}")
     print(f"Baris kosong dibuang: {n_kosong}")
+    for destinasi, jumlah in kosong_per_destinasi[kosong_per_destinasi > 0].items():
+        print(f"  tanpa teks ({destinasi}): {jumlah}")
     print(f"Baris akhir: {len(df)}")
     print(f"\nTanggal tidak terbaca: {df['usia_bulan'].isna().sum()}")
     print(f"Ulasan diedit: {int(df['diedit'].sum())}")

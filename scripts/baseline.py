@@ -18,8 +18,8 @@ from sklearn.tree import DecisionTreeClassifier
 warnings.filterwarnings("ignore")
 
 GOLD_PATH = os.path.join("data", "ABSA", "04_gold_standard",
-                         "absa_gold_standard_200_review_v2.csv")
-OUT_DIR = os.path.join("hasil", "baseline")
+                         "gold_standard_gabungan.csv")
+OUT_DIR = os.path.join("hasil", "baseline_v2")   # folder baru, hasil baseline lama tidak tertimpa
 os.makedirs(OUT_DIR, exist_ok=True)
 
 SEEDS = [42, 43, 44, 45, 46]   # seed pertama dipakai untuk laporan dan confusion matrix
@@ -82,15 +82,28 @@ def jalankan():
     gold = pd.read_csv(GOLD_PATH, encoding="utf-8-sig")
     gold["teks"] = gold["teks_aspek"].apply(normalisasi)
 
+    # Tugas sentimen memakai tiga kelas: Positif, Negatif, dan Netral
     tugas = {
         "aspek": gold.copy(),
-        "sentimen": gold[gold["sentimen"] != "Netral"].copy(),
+        "sentimen": gold.copy(),
     }
     kolom_label = {"aspek": "aspek", "sentimen": "sentimen"}
 
     print(f"Gold standard: {len(gold)} pasangan dari {gold['review_id'].nunique()} review")
-    print(f"Tugas sentimen memakai Positif dan Negatif saja "
-          f"({len(tugas['sentimen'])} pasangan, {len(gold) - len(tugas['sentimen'])} Netral dikeluarkan)")
+    print("Tugas sentimen memakai tiga kelas (Positif, Negatif, Netral)")
+
+    # Distribusi kelas per tugas (jumlah dan persen), disimpan sebagai tabel
+    distribusi = []
+    for nama_tugas, df in tugas.items():
+        hitung = df[kolom_label[nama_tugas]].value_counts()
+        for kelas, n in hitung.items():
+            distribusi.append({"tugas": nama_tugas, "kelas": kelas, "jumlah": int(n),
+                               "persen": round(100 * n / len(df), 1)})
+    distribusi = pd.DataFrame(distribusi)
+    distribusi.to_csv(os.path.join(OUT_DIR, "distribusi_kelas.csv"),
+                      index=False, encoding="utf-8-sig")
+    print("\nDISTRIBUSI KELAS")
+    print(distribusi.to_string(index=False))
 
     baris, laporan = [], []
     for nama_tugas, df in tugas.items():

@@ -1,0 +1,9 @@
+﻿tugas,fitur,model,akurasi_rata,akurasi_std,macro_f1_rata,macro_f1_std
+aspek,BoW,Decision Tree,0.771,0.009,0.722,0.011
+aspek,-,Majority (pembanding),0.461,0.0,0.105,0.0
+aspek,TF-IDF,Decision Tree,0.75,0.008,0.7,0.012
+aspek,N-gram (1-2),Decision Tree,0.742,0.007,0.69,0.009
+sentimen,BoW,Decision Tree,0.793,0.009,0.678,0.012
+sentimen,-,Majority (pembanding),0.683,0.0,0.271,0.0
+sentimen,TF-IDF,Decision Tree,0.764,0.005,0.635,0.007
+sentimen,N-gram (1-2),Decision Tree,0.766,0.005,0.634,0.005

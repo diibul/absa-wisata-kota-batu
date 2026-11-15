@@ -1,0 +1,10 @@
+﻿tugas,skenario,kelas,latih_sebelum,latih_sesudah
+sentimen,2 EDA,Negatif,304,304
+sentimen,2 EDA,Netral,81,304
+sentimen,2 EDA,Positif,830,830
+aspek,2 EDA,Daya Tarik Wisata,561,561
+aspek,2 EDA,Edukasi,150,197
+aspek,2 EDA,Fasilitas,135,197
+aspek,2 EDA,Harga & Tiket,197,197
+aspek,2 EDA,Kuliner,85,197
+aspek,2 EDA,Pelayanan,90,197

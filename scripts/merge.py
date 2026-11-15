@@ -2,7 +2,7 @@ import os
 import glob
 import pandas as pd
 
-RAW_DIR = os.path.join("data", "raw")
+RAW_DIRS = [os.path.join("data", "raw"), os.path.join("data", "raw_naafi")]
 MERGED_DIR = os.path.join("data", "merged")
 os.makedirs(MERGED_DIR, exist_ok=True)
 
@@ -18,7 +18,10 @@ TARGET = {
 
 
 def merge():
-    files = sorted(glob.glob(os.path.join(RAW_DIR, "*.csv")))
+    files = []
+    for d in RAW_DIRS:
+        files += glob.glob(os.path.join(d, "**", "*.csv"), recursive=True)
+    files = sorted(files, key=lambda p: (p.count(os.sep), p))
     if not files:
         print("Tidak ada file CSV di data/raw/")
         return

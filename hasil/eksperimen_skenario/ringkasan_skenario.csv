@@ -1,0 +1,15 @@
+﻿tugas,skenario,model,fitur,akurasi,akurasi_std,macro_f1,macro_f1_std,f1_netral
+sentimen,1 Tanpa augmentasi,Pembanding (kelas terbanyak),-,0.683,0.0,0.271,0.0,0.0
+sentimen,1 Tanpa augmentasi,Decision Tree,BoW,0.793,0.009,0.678,0.012,0.457
+sentimen,1 Tanpa augmentasi,Decision Tree,TF-IDF,0.764,0.005,0.635,0.007,0.394
+sentimen,1 Tanpa augmentasi,Decision Tree,N-gram (1-2),0.766,0.005,0.634,0.005,0.39
+sentimen,2 EDA,Decision Tree,BoW,0.794,0.004,0.683,0.006,0.47
+sentimen,2 EDA,Decision Tree,TF-IDF,0.774,0.005,0.653,0.003,0.42
+sentimen,2 EDA,Decision Tree,N-gram (1-2),0.771,0.004,0.653,0.007,0.432
+aspek,1 Tanpa augmentasi,Pembanding (kelas terbanyak),-,0.461,0.0,0.105,0.0,
+aspek,1 Tanpa augmentasi,Decision Tree,BoW,0.771,0.009,0.722,0.011,
+aspek,1 Tanpa augmentasi,Decision Tree,TF-IDF,0.75,0.008,0.7,0.012,
+aspek,1 Tanpa augmentasi,Decision Tree,N-gram (1-2),0.742,0.007,0.69,0.009,
+aspek,2 EDA,Decision Tree,BoW,0.776,0.005,0.728,0.006,
+aspek,2 EDA,Decision Tree,TF-IDF,0.755,0.006,0.704,0.007,
+aspek,2 EDA,Decision Tree,N-gram (1-2),0.743,0.005,0.693,0.006,

@@ -48,6 +48,45 @@ def normalisasi(teks):
 
 
 # ---------- augmentasi ----------
+SINONIM_KAMUS = {
+    "bagus": ["baik", "mantap", "keren", "apik", "cantik", "indah"],
+    "indah": ["cantik", "menawan", "bagus", "elok", "pesona"],
+    "mahal": ["tinggi", "menguras", "berlebih"],
+    "murah": ["terjangkau", "ekonomis", "merakyat", "hemat"],
+    "ramah": ["sopan", "baik", "hangat", "menyenangkan"],
+    "bersih": ["rapi", "higienis", "terawat", "apik"],
+    "kotor": ["kumuh", "jorok", "terbengkalai", "berdebu"],
+    "nyaman": ["enak", "adem", "betah", "tentram"],
+    "senang": ["gembira", "puas", "bahagia", "suka"],
+    "kecewa": ["sesal", "kurang", "sedih", "kesal"],
+    "puas": ["senang", "mantap", "bersyukur"],
+    "wahana": ["atraksi", "permainan", "fasilitas", "hiburan"],
+    "tempat": ["lokasi", "area", "kawasan", "objek"],
+    "tiket": ["karcis", "biaya", "tarif"],
+    "harga": ["biaya", "tarif", "ongkos", "nilai"],
+    "makanan": ["kuliner", "hidangan", "santapan", "menu"],
+    "minuman": ["minum", "kuliner"],
+    "petugas": ["staf", "pegawai", "karyawan", "pelayan"],
+    "luas": ["lebar", "lapang", "lega", "besar"],
+    "sempit": ["sesak", "padat", "ramai"],
+    "ramai": ["padat", "sesak", "banyak"],
+    "sepi": ["lengang", "tenang", "sunyi"],
+    "antre": ["antri", "menunggu"],
+    "banyak": ["berlimpah", "beragam", "aneka"],
+    "sedikit": ["minim", "kurang", "terbatas"],
+    "cocok": ["pas", "sesuai", "tepat"],
+    "anak": ["anak-anak", "bocah", "balita", "keluarga"],
+    "edukasi": ["pembelajaran", "edukatif", "pendidikan", "wawasan"],
+    "belajar": ["edukasi", "mengetahui", "mengenal"],
+    "koleksi": ["pameran", "artefak", "barang", "pajangan"],
+    "spot": ["titik", "lokasi", "sudut", "area"],
+    "foto": ["gambar", "swafoto", "potret"],
+    "parkir": ["parkiran", "lahan", "tempat"],
+    "toilet": ["kamar mandi", "wc", "fasilitas"],
+    "mushola": ["tempat ibadah", "surau", "masjid"],
+}
+
+
 def target_ukuran(hitung):
     """Kelas yang lebih kecil dinaikkan sampai sebesar kelas terbesar kedua."""
     urut = sorted(hitung.values(), reverse=True)
@@ -55,9 +94,33 @@ def target_ukuran(hitung):
 
 
 def eda_satu(kata, kosa, rng):
-    """Satu variasi EDA: tukar posisi kata, hapus kata, atau sisipkan kata dari kelas yang sama."""
+    """Satu variasi EDA:
+    - Semantic replacement: mengganti kata dengan sinonim
+    - Semantic insertion: menyisipkan sinonim kata yang ada
+    - Random swap: menukar posisi dua kata
+    - Random deletion: menghapus kata
+    - Random insertion: menyisipkan kata dari kosakata kelas
+    """
     k = list(kata)
-    op = rng.choice(["tukar", "hapus", "sisip"])
+    op = rng.choice(["sinonim_ganti", "sinonim_sisip", "tukar", "hapus", "sisip"])
+
+    if op == "sinonim_ganti":
+        kandidat = [i for i, w in enumerate(k) if w in SINONIM_KAMUS]
+        if kandidat:
+            i = rng.choice(kandidat)
+            k[i] = rng.choice(SINONIM_KAMUS[k[i]])
+            return " ".join(k)
+        op = "tukar"
+
+    if op == "sinonim_sisip":
+        kandidat = [w for w in k if w in SINONIM_KAMUS]
+        if kandidat:
+            w = rng.choice(kandidat)
+            sinonim = rng.choice(SINONIM_KAMUS[w])
+            k.insert(rng.randrange(len(k) + 1), sinonim)
+            return " ".join(k)
+        op = "sisip"
+
     if op == "tukar" and len(k) >= 2:
         i, j = rng.sample(range(len(k)), 2)
         k[i], k[j] = k[j], k[i]

@@ -3,13 +3,19 @@ sentimen,1 Tanpa augmentasi,Pembanding (kelas terbanyak),-,0.683,0.0,0.271,0.0,0
 sentimen,1 Tanpa augmentasi,Decision Tree,BoW,0.793,0.009,0.678,0.012,0.457
 sentimen,1 Tanpa augmentasi,Decision Tree,TF-IDF,0.764,0.005,0.635,0.007,0.394
 sentimen,1 Tanpa augmentasi,Decision Tree,N-gram (1-2),0.766,0.005,0.634,0.005,0.39
-sentimen,2 EDA,Decision Tree,BoW,0.794,0.004,0.683,0.006,0.47
-sentimen,2 EDA,Decision Tree,TF-IDF,0.774,0.005,0.653,0.003,0.42
-sentimen,2 EDA,Decision Tree,N-gram (1-2),0.771,0.004,0.653,0.007,0.432
+sentimen,2 EDA,Decision Tree,BoW,0.791,0.005,0.682,0.007,0.475
+sentimen,2 EDA,Decision Tree,TF-IDF,0.768,0.013,0.644,0.019,0.414
+sentimen,2 EDA,Decision Tree,N-gram (1-2),0.764,0.012,0.642,0.012,0.405
+sentimen,3 Back-translation,Decision Tree,BoW,0.791,0.006,0.679,0.01,0.467
+sentimen,3 Back-translation,Decision Tree,TF-IDF,0.759,0.007,0.627,0.012,0.381
+sentimen,3 Back-translation,Decision Tree,N-gram (1-2),0.753,0.002,0.624,0.006,0.384
 aspek,1 Tanpa augmentasi,Pembanding (kelas terbanyak),-,0.461,0.0,0.105,0.0,
 aspek,1 Tanpa augmentasi,Decision Tree,BoW,0.771,0.009,0.722,0.011,
 aspek,1 Tanpa augmentasi,Decision Tree,TF-IDF,0.75,0.008,0.7,0.012,
 aspek,1 Tanpa augmentasi,Decision Tree,N-gram (1-2),0.742,0.007,0.69,0.009,
-aspek,2 EDA,Decision Tree,BoW,0.776,0.005,0.728,0.006,
-aspek,2 EDA,Decision Tree,TF-IDF,0.755,0.006,0.704,0.007,
-aspek,2 EDA,Decision Tree,N-gram (1-2),0.743,0.005,0.693,0.006,
+aspek,2 EDA,Decision Tree,BoW,0.778,0.009,0.732,0.01,
+aspek,2 EDA,Decision Tree,TF-IDF,0.754,0.005,0.705,0.006,
+aspek,2 EDA,Decision Tree,N-gram (1-2),0.751,0.008,0.701,0.01,
+aspek,3 Back-translation,Decision Tree,BoW,0.774,0.009,0.729,0.012,
+aspek,3 Back-translation,Decision Tree,TF-IDF,0.75,0.006,0.701,0.007,
+aspek,3 Back-translation,Decision Tree,N-gram (1-2),0.745,0.005,0.691,0.006,

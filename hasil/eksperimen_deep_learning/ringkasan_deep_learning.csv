@@ -1,0 +1,5 @@
+﻿tugas,skenario,model,embedding,akurasi,akurasi_std,macro_f1,macro_f1_std,f1_netral
+sentimen,Data Asli,BiLSTM,Dense (100d),0.822,0.005,0.675,0.006,0.418
+sentimen,Data Augmentasi,BiLSTM,Dense (100d),0.806,0.004,0.674,0.005,0.449
+aspek,Data Asli,BiLSTM,Dense (100d),0.782,0.006,0.718,0.007,
+aspek,Data Augmentasi,BiLSTM,Dense (100d),0.778,0.009,0.722,0.01,

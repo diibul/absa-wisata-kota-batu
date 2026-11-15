@@ -1,17 +1,20 @@
-"""Membuat data augmentasi back-translation: Indonesia -> bahasa lain -> Indonesia.
-Butuh internet dan library deep-translator:  pip install deep-translator
+"""Membuat data augmentasi back-translation: Indonesia -> bahasa perantara -> Indonesia.
+Menggunakan ThreadPoolExecutor untuk kecepatan dan penyimpanan berkala per batch.
 Jalankan dari folder utama proyek:  python scripts/buat_backtranslation.py
-Bisa dihentikan kapan saja (Ctrl+C) dan dilanjutkan lagi, hasil yang sudah ada tidak diulang.
 """
 import argparse
 import os
 import re
+import threading
 import time
-
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import pandas as pd
+from deep_translator import MyMemoryTranslator
 
 GOLD_PATH = os.path.join("data", "ABSA", "04_gold_standard", "gold_standard_gabungan.csv")
 OUT_PATH = os.path.join("data", "ABSA", "04_gold_standard", "aug_backtranslation.csv")
+
+lock = threading.Lock()
 
 
 def normalisasi(teks):
@@ -19,13 +22,8 @@ def normalisasi(teks):
     return re.sub(r"\s+", " ", teks).strip()
 
 
-def terjemah(teks, asal, tujuan):
-    from deep_translator import GoogleTranslator
-    return GoogleTranslator(source=asal, target=tujuan).translate(teks)
-
-
 def teks_perlu_augmentasi():
-    """Potongan teks dari kelas yang lebih kecil dari kelas terbesar kedua (sentimen dan aspek)."""
+    """Mengambil potongan teks dari kelas minoritas pada sentimen dan aspek."""
     g = pd.read_csv(GOLD_PATH, encoding="utf-8-sig")
     g["teks"] = g["teks_aspek"].apply(normalisasi)
     kumpul = set()
@@ -37,39 +35,60 @@ def teks_perlu_augmentasi():
     return sorted(t for t in kumpul if t)
 
 
+def proses_satu(t, bahasa):
+    t_id_ke_en = MyMemoryTranslator(source="id-ID", target=bahasa)
+    t_en_ke_id = MyMemoryTranslator(source=bahasa, target="id-ID")
+    for percobaan in range(3):
+        try:
+            en = t_id_ke_en.translate(t)
+            if en:
+                id_back = t_en_ke_id.translate(en)
+                hasil = normalisasi(id_back)
+                if hasil and hasil != t:
+                    return (t, bahasa, hasil)
+        except Exception:
+            time.sleep(1.0 + percobaan * 2.0)
+    return None
+
+
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--bahasa", nargs="+", default=["ja", "zh-CN", "ru", "vi"],
-                    help="kode bahasa perantara (ja=Jepang, zh-CN=China, ru=Rusia, vi=Vietnam)")
+    ap.add_argument("--bahasa", default="en-GB", help="Bahasa perantara (default: en-GB)")
+    ap.add_argument("--workers", type=int, default=5, help="Jumlah thread paralel")
     a = ap.parse_args()
+
     teks_list = teks_perlu_augmentasi()
-    print(f"{len(teks_list)} potongan teks akan diterjemahkan lewat {len(a.bahasa)} bahasa.")
-    ada = pd.read_csv(OUT_PATH, encoding="utf-8-sig") if os.path.exists(OUT_PATH) else pd.DataFrame(columns=["teks", "bahasa", "hasil"])
+    print(f"Total {len(teks_list)} teks unik yang membutuhkan augmentasi.", flush=True)
+
+    if os.path.exists(OUT_PATH):
+        ada = pd.read_csv(OUT_PATH, encoding="utf-8-sig")
+    else:
+        ada = pd.DataFrame(columns=["teks", "bahasa", "hasil"])
+
     selesai = set(zip(ada["teks"], ada["bahasa"]))
     baris = ada.to_dict("records")
-    for bahasa in a.bahasa:
-        baru = 0
-        for t in teks_list:
-            if (t, bahasa) in selesai:
-                continue
-            hasil = None
-            for percobaan in range(3):
-                try:
-                    antara = terjemah(t, "id", bahasa)
-                    hasil = terjemah(antara, bahasa, "id")
-                    break
-                except Exception as e:
-                    time.sleep(2 + percobaan * 3)
-            if hasil:
-                baris.append({"teks": t, "bahasa": bahasa, "hasil": hasil})
-                selesai.add((t, bahasa)); baru += 1
-                if baru % 25 == 0:
-                    pd.DataFrame(baris).to_csv(OUT_PATH, index=False, encoding="utf-8-sig")
-                    print(f"  {bahasa}: {baru} selesai")
-            time.sleep(0.2)
-        pd.DataFrame(baris).to_csv(OUT_PATH, index=False, encoding="utf-8-sig")
-        print(f"Bahasa {bahasa} selesai ({baru} baru). Total baris: {len(baris)}")
-    print(f"Tersimpan di {OUT_PATH}")
+    print(f"Data tersimpan sebelumnya: {len(baris)} baris.", flush=True)
+
+    sisa_teks = [t for t in teks_list if (t, a.bahasa) not in selesai]
+    print(f"Sisa yang perlu diproses: {len(sisa_teks)} teks dengan {a.workers} thread.", flush=True)
+
+    berhasil_baru = 0
+    with ThreadPoolExecutor(max_workers=a.workers) as executor:
+        futures = {executor.submit(proses_satu, t, a.bahasa): t for t in sisa_teks}
+        for f in as_completed(futures):
+            res = f.result()
+            if res:
+                t, bahasa, hasil = res
+                with lock:
+                    baris.append({"teks": t, "bahasa": bahasa, "hasil": hasil})
+                    berhasil_baru += 1
+                    if berhasil_baru % 10 == 0:
+                        pd.DataFrame(baris).to_csv(OUT_PATH, index=False, encoding="utf-8-sig")
+                        print(f"Progress: {len(baris)}/{len(teks_list)} selesai ({berhasil_baru} baru)", flush=True)
+
+    pd.DataFrame(baris).to_csv(OUT_PATH, index=False, encoding="utf-8-sig")
+    print(f"\nSelesai. Total data augmentasi: {len(baris)} baris.", flush=True)
+    print(f"File tersimpan di: {OUT_PATH}", flush=True)
 
 
 if __name__ == "__main__":

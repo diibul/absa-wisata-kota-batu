@@ -2,9 +2,18 @@
 sentimen,2 EDA,Negatif,304,304
 sentimen,2 EDA,Netral,81,304
 sentimen,2 EDA,Positif,830,830
+sentimen,3 Back-translation,Negatif,304,304
+sentimen,3 Back-translation,Netral,81,105
+sentimen,3 Back-translation,Positif,830,830
 aspek,2 EDA,Daya Tarik Wisata,561,561
 aspek,2 EDA,Edukasi,150,197
 aspek,2 EDA,Fasilitas,135,197
 aspek,2 EDA,Harga & Tiket,197,197
 aspek,2 EDA,Kuliner,85,197
 aspek,2 EDA,Pelayanan,90,197
+aspek,3 Back-translation,Daya Tarik Wisata,561,561
+aspek,3 Back-translation,Edukasi,150,197
+aspek,3 Back-translation,Fasilitas,135,163
+aspek,3 Back-translation,Harga & Tiket,197,197
+aspek,3 Back-translation,Kuliner,85,102
+aspek,3 Back-translation,Pelayanan,90,108

@@ -17,18 +17,34 @@ Positif       79      75      885
 === sentimen | skenario 2 EDA | Decision Tree | BoW (seed 42) ===
               precision    recall  f1-score   support
 
-     Negatif       0.76      0.68      0.72       381
-      Netral       0.40      0.62      0.49       101
+     Negatif       0.75      0.67      0.71       381
+      Netral       0.41      0.65      0.50       101
      Positif       0.88      0.86      0.87      1039
 
     accuracy                           0.80      1521
-   macro avg       0.68      0.72      0.69      1521
-weighted avg       0.82      0.80      0.81      1521
+   macro avg       0.68      0.73      0.69      1521
+weighted avg       0.81      0.80      0.80      1521
 
          Negatif  Netral  Positif
-Negatif      259      23       99
-Netral        11      63       27
-Positif       71      71      897
+Negatif      257      22      102
+Netral        11      66       24
+Positif       74      73      892
+
+=== sentimen | skenario 3 Back-translation | Decision Tree | BoW (seed 42) ===
+              precision    recall  f1-score   support
+
+     Negatif       0.76      0.67      0.71       381
+      Netral       0.36      0.59      0.44       101
+     Positif       0.87      0.85      0.86      1039
+
+    accuracy                           0.79      1521
+   macro avg       0.66      0.70      0.67      1521
+weighted avg       0.81      0.79      0.79      1521
+
+         Negatif  Netral  Positif
+Negatif      256      25      100
+Netral         9      60       32
+Positif       73      84      882
 
 === aspek | skenario 1 Tanpa augmentasi | Decision Tree | BoW (seed 42) ===
                    precision    recall  f1-score   support
@@ -55,22 +71,44 @@ Pelayanan                         30        5          5              9        1
 === aspek | skenario 2 EDA | Decision Tree | BoW (seed 42) ===
                    precision    recall  f1-score   support
 
-Daya Tarik Wisata       0.79      0.87      0.83       701
-          Edukasi       0.87      0.78      0.82       187
-        Fasilitas       0.72      0.66      0.69       169
-    Harga & Tiket       0.80      0.72      0.76       246
-          Kuliner       0.65      0.66      0.66       106
-        Pelayanan       0.68      0.58      0.63       112
+Daya Tarik Wisata       0.79      0.89      0.84       701
+          Edukasi       0.88      0.78      0.83       187
+        Fasilitas       0.73      0.68      0.70       169
+    Harga & Tiket       0.81      0.72      0.76       246
+          Kuliner       0.69      0.71      0.70       106
+        Pelayanan       0.70      0.54      0.61       112
 
-         accuracy                           0.78      1521
-        macro avg       0.75      0.71      0.73      1521
-     weighted avg       0.78      0.78      0.77      1521
+         accuracy                           0.79      1521
+        macro avg       0.77      0.72      0.74      1521
+     weighted avg       0.79      0.79      0.78      1521
 
                    Daya Tarik Wisata  Edukasi  Fasilitas  Harga & Tiket  Kuliner  Pelayanan
-Daya Tarik Wisata                612       17         34             17        9         12
-Edukasi                           31      146          2              0        0          8
-Fasilitas                         49        0        111              3        1          5
-Harga & Tiket                     33        1          4            178       26          4
-Kuliner                           20        0          0             15       70          1
-Pelayanan                         29        3          4             10        1         65
+Daya Tarik Wisata                622       14         32             15        8         10
+Edukasi                           30      145          2              1        0          9
+Fasilitas                         44        0        115              2        3          5
+Harga & Tiket                     42        1          3            178       21          1
+Kuliner                           13        0          2             15       75          1
+Pelayanan                         33        4          4              9        2         60
+
+=== aspek | skenario 3 Back-translation | Decision Tree | BoW (seed 42) ===
+                   precision    recall  f1-score   support
+
+Daya Tarik Wisata       0.78      0.88      0.83       701
+          Edukasi       0.87      0.79      0.83       187
+        Fasilitas       0.72      0.68      0.70       169
+    Harga & Tiket       0.83      0.72      0.77       246
+          Kuliner       0.67      0.66      0.67       106
+        Pelayanan       0.74      0.60      0.66       112
+
+         accuracy                           0.79      1521
+        macro avg       0.77      0.72      0.74      1521
+     weighted avg       0.79      0.79      0.78      1521
+
+                   Daya Tarik Wisata  Edukasi  Fasilitas  Harga & Tiket  Kuliner  Pelayanan
+Daya Tarik Wisata                617       18         32             12        8         14
+Edukasi                           33      148          2              0        0          4
+Fasilitas                         47        0        115              2        3          2
+Harga & Tiket                     41        1          3            177       22          2
+Kuliner                           19        0          2             14       70          1
+Pelayanan                         29        3          5              7        1         67
 
